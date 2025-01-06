@@ -167,6 +167,20 @@ with tab3:
     )
     fig.update_layout(height=500)
     st.plotly_chart(fig, use_container_width=True)
+    # Group by category (facility) and sentiment, then count occurrences
+    facility_sentiment_counts = df.groupby(['category', 'sentiment']).size().unstack(fill_value=0)
+    # Check for facilities where 'Unhappy' count exceeds 'Happy' count
+    concern_facilities = facility_sentiment_counts[
+        (facility_sentiment_counts.get('unhappy', 0) > facility_sentiment_counts.get('happy', 0))
+    ].index.tolist()
+
+    # Display the list of concerning facilities, each on a new line
+    if concern_facilities:
+        st.warning("⚠️ Concern: The following facilities have more 'Unhappy' responses than 'Happy':")
+        for facility in concern_facilities:
+            st.write(f"- {facility}")
+    else:
+        st.success("😊 Great News: No facility has more 'Unhappy' responses than 'Happy'.")
 
 with tab4:
     st.header("Model Performance Comparison")
