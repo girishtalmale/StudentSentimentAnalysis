@@ -106,6 +106,12 @@ with tab1:
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig, use_container_width=True)
+    if unhappy_count > happy_count:
+        st.warning("⚠️ Concern: The number of 'Unhappy' responses exceeds the number of 'Happy' responses!")
+    elif happy_count > 0 and unhappy_count == 0:
+        st.success("😊 Great News: There are only 'Happy' responses with no 'Unhappy' responses!")
+    elif happy_count == 0 and unhappy_count > 0:
+        st.warning("⚠️ Alert: No 'Happy' responses were recorded, but there are 'Unhappy' responses.")
 
 with tab2:
     st.header("Department-wise Sentiment Analysis")
@@ -132,6 +138,20 @@ with tab2:
         height=500
     )
     st.plotly_chart(fig, use_container_width=True)
+    # Group by department and sentiment, then count occurrences
+    department_sentiment_counts = df.groupby(['department', 'sentiment']).size().unstack(fill_value=0)
+    # Check for departments where 'Unhappy' count exceeds 'Happy' count
+    concern_departments = department_sentiment_counts[
+        (department_sentiment_counts.get('unhappy', 0) > department_sentiment_counts.get('happy', 0))
+    ].index.tolist()
+
+    # Display the list of concerning departments
+    if concern_departments:
+        st.warning("⚠️ Concern: The following departments have more 'Unhappy' responses than 'Happy':")
+        for department in concern_departments:
+            st.write(f"- {department}")
+    else:
+        st.success("😊 Great News: No department has more 'Unhappy' responses than 'Happy'.")
 
 with tab3:
     st.header("Facility-wise Sentiment Analysis")
